@@ -1,8 +1,10 @@
-const { create, Client } = require('venom-bot');
+const { create } = require('venom-bot');
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+app.use(cors());
 app.use(express.json());
 
 let sessionId = process.env.SESSION_ID || null;
@@ -14,20 +16,21 @@ app.get('/', (req, res) => {
 app.post('/start', async (req, res) => {
   sessionId = req.body.sessionId || sessionId;
 
-  if (!sessionId) return res.status(400).json({ error: 'Session ID required' });
+  if (!sessionId) {
+    return res.status(400).json({ error: 'Session ID required' });
+  }
 
-  create(sessionId, undefined, undefined, {
-    headless: true,
-    useChrome: false,
-  })
-    .then((client) => {
-      startBot(client);
-      res.json({ message: 'QUEEN BELLA started successfully' });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to start bot' });
+  try {
+    const client = await create(sessionId, undefined, undefined, {
+      headless: true,
+      useChrome: false,
     });
+    startBot(client);
+    res.json({ message: 'QUEEN BELLA started successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to start bot' });
+  }
 });
 
 function startBot(client) {
@@ -67,7 +70,7 @@ function startBot(client) {
 ┃
 ╰────────────⊷
 *View Channel*: https://whatsapp.com/channel/0029VbBH9IGCnA7l7rdZlB0e
-━━━「 Powered by Rodgers 」━━━`);
+━━━「 Made by Rodgers 」━━━`);
     }
 
     if (command === '.owner') {
@@ -102,4 +105,4 @@ INST: EGERTON
   client.onStateChange((state) => {
     console.log('Bot state:', state);
   });
-}
+                            }
