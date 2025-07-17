@@ -1,80 +1,66 @@
-const { create } = require('venom-bot');
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const { create } = require("venom-bot");
+
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+// Launch WhatsApp bot
+create({
+  session: 'QUEEN-BELLA',
+})
+  .then((client) => start(client))
+  .catch((err) => {
+    console.error("Error creating session:", err);
+    process.exit(1);
+  });
 
-let sessionId = process.env.SESSION_ID || null;
-
-app.get('/', (req, res) => {
-  res.send('QUEEN BELLA Backend is Running');
-});
-
-app.post('/start', async (req, res) => {
-  sessionId = req.body.sessionId || sessionId;
-
-  if (!sessionId) {
-    return res.status(400).json({ error: 'Session ID required' });
-  }
-
-  try {
-    const client = await create(sessionId, undefined, undefined, {
-      headless: true,
-      useChrome: false,
-    });
-    startBot(client);
-    res.json({ message: 'QUEEN BELLA started successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to start bot' });
-  }
-});
-
-function startBot(client) {
+// Command handler
+function start(client) {
   client.onMessage(async (message) => {
-    if (!message.body.startsWith('.')) return;
+    if (!message.body.startsWith(".")) return;
 
-    const command = message.body.toLowerCase().trim();
+    const command = message.body.trim().toLowerCase();
 
-    if (command === '.menu') {
-      await client.sendText(message.from, `╭────────────⊷
+    // Main .menu command
+    if (command === ".menu") {
+      const menu = `
+╭───────────⊷
 ┋ ʙᴏᴛ ɴᴀᴍᴇ : 🖥️𝐐𝐔𝐄𝐄𝐍 𝐁𝐄𝐋𝐋𝐀
 ┋ ᴘʀᴇғɪx : [ . ]
 ┋ ᴍᴏᴅᴇ : private
+╰───────────⊷
+│ • .autostatus
+│ • .react
+│ • .help
+│ • .owner
+│ • .menu
+│ • .botinfo
+│ • .status
+│ • .groupinfo
+│ • .quote
+│ • .emoji
+│ • .gif
+│ • .sticker
+│ • .delete
+│ • .hi
+│ • .bye
+│ • .alive
+│ • .ping
+│ • .time
+│ • .uptime
+│ • .support
+│ Made by Rodgers
 ╰────────────⊷
-┃
-┃ .menu
-┃ .owner
-┃ .autostatus
-┃ .react
-┃ .chatbot on/off
-┃ .ping
-┃ .alive
-┃ .source
-┃ .status
-┃ .typing
-┃ .greet
-┃ .getinfo
-┃ .version
-┃ .info
-┃ .linkgroup
-┃ .report
-┃ .help
-┃ .rules
-┃ .support
-┃ .restart
-┃ .updates
-┃
-╰────────────⊷
-*View Channel*: https://whatsapp.com/channel/0029VbBH9IGCnA7l7rdZlB0e
-━━━「 Made by Rodgers 」━━━`);
+🔗 *View Channel*: https://whatsapp.com/channel/0029VbBH9IGCnA7l7rdZlB0e
+      `.trim();
+
+      client.sendText(message.from, menu);
     }
 
-    if (command === '.owner') {
-      await client.sendText(message.from, `┏━ OWNER DETAILS ━┓
+    // .owner command
+    if (command === ".owner") {
+      const ownerInfo = `
+╭───「  OWNER INFO  」───╮
 Name: RODGERS ONYANGO
 Home: KISUMU KENYA
 Status: SINGLE
@@ -82,27 +68,21 @@ CONT: 0755660053
 AGE: 17 YEARS
 EDU..: BACHELOR DEGREE
 INST: EGERTON
-┗━━━━━━━━━━━━━━┛`);
+╰─────────────────────╯
+      `.trim();
+
+      client.sendText(message.from, ownerInfo);
     }
 
-    if (command === '.ping') {
-      await client.sendText(message.from, `QUEEN BELLA is active ✅`);
-    }
-
-    if (command === '.alive') {
-      await client.sendText(message.from, `✅ QUEEN BELLA is alive and working perfectly.`);
-    }
-
-    if (command === '.chatbot on') {
-      await client.sendText(message.from, `Chatbot enabled. Rodgers is currently unavailable, can we chat? I am a bot.`);
-    }
-
-    if (command === '.chatbot off') {
-      await client.sendText(message.from, `Chatbot disabled.`);
-    }
+    // You can add more command handlers here.
   });
+}
 
-  client.onStateChange((state) => {
-    console.log('Bot state:', state);
-  });
-                            }
+// Start Express server
+app.get("/", (req, res) => {
+  res.send("Queen Bella Backend is running.");
+});
+
+app.listen(PORT, () => {
+  console.log(`Backend is running on port ${PORT}`);
+});
